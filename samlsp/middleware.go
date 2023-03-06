@@ -171,6 +171,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 	fmt.Printf("relayState: %v\n", relayState)
 
 	if binding == saml.HTTPRedirectBinding {
+		fmt.Println("redirect binding")
 		redirectURL, err := authReq.Redirect(relayState, &m.ServiceProvider)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -181,6 +182,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if binding == saml.HTTPPostBinding {
+		fmt.Println("post binding")
 		w.Header().Add("Content-Security-Policy", ""+
 			"default-src; "+
 			"script-src 'sha256-AjPdJSbZmeWHnEc5ykvJFay8FTWeTeRbs9dutfZ0HqE='; "+
