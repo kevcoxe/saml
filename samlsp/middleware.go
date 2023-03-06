@@ -199,6 +199,7 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 		if err != nil {
 			if err == http.ErrNoCookie && m.ServiceProvider.AllowIDPInitiated {
 				if uri := r.Form.Get("RelayState"); uri != "" {
+					fmt.Printf("uri: %v\n", uri)
 					redirectURI = uri
 				}
 			} else {
@@ -206,11 +207,15 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 				return
 			}
 		} else {
+
+			fmt.Printf("trackedRequest.URI: %v\n", trackedRequest.URI)
 			m.RequestTracker.StopTrackingRequest(w, r, trackedRequestIndex)
 
 			redirectURI = trackedRequest.URI
 		}
 	}
+
+	redirectURI = "/"
 
 	if err := m.Session.CreateSession(w, r, assertion); err != nil {
 		m.OnError(w, r, err)
