@@ -44,7 +44,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     "test",
+		Name:     c.Name,
 		Domain:   c.Domain,
 		Value:    value,
 		MaxAge:   int(c.MaxAge.Seconds()),
