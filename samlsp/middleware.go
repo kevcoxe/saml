@@ -168,6 +168,8 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	fmt.Printf("relayState: %v\n", relayState)
+
 	if binding == saml.HTTPRedirectBinding {
 		redirectURL, err := authReq.Redirect(relayState, &m.ServiceProvider)
 		if err != nil {
