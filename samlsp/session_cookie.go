@@ -1,7 +1,6 @@
 package samlsp
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -43,19 +42,6 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	if err != nil {
 		return err
 	}
-
-	mCookie := http.Cookie{
-		Name:     c.Name,
-		Domain:   c.Domain,
-		Value:    value,
-		MaxAge:   int(c.MaxAge.Seconds()),
-		HttpOnly: c.HTTPOnly,
-		Secure:   c.Secure || r.URL.Scheme == "https",
-		SameSite: c.SameSite,
-		Path:     "/",
-	}
-
-	fmt.Printf("mCookie: %v\n", mCookie)
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "test",

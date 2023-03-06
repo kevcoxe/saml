@@ -111,11 +111,13 @@ func (m *Middleware) RequireAccount(handler http.Handler) http.Handler {
 
 		session, err := m.Session.GetSession(r)
 		if session != nil {
+			fmt.Println("Session found....")
 			r = r.WithContext(ContextWithSession(r.Context(), session))
 			handler.ServeHTTP(w, r)
 			return
 		}
 		if err == ErrNoSession {
+			fmt.Println("NO Session found....")
 			m.HandleStartAuthFlow(w, r)
 			return
 		}
@@ -153,6 +155,8 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	fmt.Printf("authReq: %v\n", authReq)
 
 	// relayState is limited to 80 bytes but also must be integrity protected.
 	// this means that we cannot use a JWT because it is way to long. Instead
