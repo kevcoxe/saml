@@ -55,16 +55,10 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		Path:     "/",
 	}
 
-	http.SetCookie(w, &http.Cookie{
-		Name:  "test",
-		Value: value,
-		Path:  "/",
-	})
-
 	fmt.Printf("mCookie: %v\n", mCookie)
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     c.Name,
+		Name:     "test",
 		Domain:   c.Domain,
 		Value:    value,
 		MaxAge:   int(c.MaxAge.Seconds()),
