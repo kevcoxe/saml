@@ -107,10 +107,7 @@ func (m *Middleware) RequireAccount(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// loop and print out all of the cookies
-		fmt.Println("Printing cookies...")
-		for _, c := range r.Cookies() {
-			fmt.Println(c)
-		}
+		fmt.Printf("Printing cookies: %v\n", r.Cookies())
 
 		session, err := m.Session.GetSession(r)
 		if session != nil {
@@ -215,14 +212,13 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 		}
 	}
 
-	redirectURI = "/"
-
 	if err := m.Session.CreateSession(w, r, assertion); err != nil {
 		m.OnError(w, r, err)
 		return
 	}
 
 	fmt.Printf("redirectURI: %v \n", redirectURI)
+	fmt.Printf("assertion: %v\n", assertion)
 
 	http.Redirect(w, r, redirectURI, http.StatusFound)
 }
