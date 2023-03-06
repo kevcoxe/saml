@@ -75,6 +75,8 @@ func (m *Middleware) ServeMetadata(w http.ResponseWriter, r *http.Request) {
 
 // ServeACS handles requests for the SAML ACS endpoint.
 func (m *Middleware) ServeACS(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Service acs...")
+
 	r.ParseForm()
 
 	possibleRequestIDs := []string{}
@@ -193,6 +195,7 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.Request, assertion *saml.Assertion, redirectURI string) {
 	if trackedRequestIndex := r.Form.Get("RelayState"); trackedRequestIndex != "" {
 		trackedRequest, err := m.RequestTracker.GetTrackedRequest(r, trackedRequestIndex)
+		fmt.Printf("Tracked request: %v \n", trackedRequest)
 		if err != nil {
 			if err == http.ErrNoCookie && m.ServiceProvider.AllowIDPInitiated {
 				if uri := r.Form.Get("RelayState"); uri != "" {
