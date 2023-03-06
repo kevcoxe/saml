@@ -44,14 +44,14 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	fmt.Printf("Name: %v", c.Name)
-	fmt.Printf("Domain: %v", c.Domain)
-	fmt.Printf("Value: %v", value)
-	fmt.Printf("MaxAge: %v", int(c.MaxAge.Seconds()))
-	fmt.Printf("HttpOnly: %v", c.HTTPOnly)
-	fmt.Printf("Secure: %v", c.Secure || r.URL.Scheme == "https")
-	fmt.Printf("SameSite: %v", c.SameSite)
-	fmt.Printf("Path: %v", "/")
+	fmt.Printf("Name: %v\n", c.Name)
+	fmt.Printf("Domain: %v\n", c.Domain)
+	fmt.Printf("Value: %v\n", value)
+	fmt.Printf("MaxAge: %v\n", int(c.MaxAge.Seconds()))
+	fmt.Printf("HttpOnly: %v\n", c.HTTPOnly)
+	fmt.Printf("Secure: %v\n", c.Secure || r.URL.Scheme == "https")
+	fmt.Printf("SameSite: %v\n", c.SameSite)
+	fmt.Printf("Path: %v\n", "/")
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     c.Name,
