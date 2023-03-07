@@ -39,10 +39,12 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	value, err := c.Codec.Encode("this is a test")
+	value, err := c.Codec.Encode(session)
 	if err != nil {
 		return err
 	}
+
+	new_value := "thisisatest"
 
 	fmt.Printf("Session: %v\n", session)
 	fmt.Printf("Name: %v\n", c.Name)
@@ -63,9 +65,9 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	fmt.Printf("new_session: %v\n", new_session)
 
 	cookie := http.Cookie{
-		Name:     c.Name,
+		Name:     "token",
 		Domain:   c.Domain,
-		Value:    value,
+		Value:    new_value,
 		MaxAge:   int(c.MaxAge.Seconds()),
 		HttpOnly: c.HTTPOnly,
 		Secure:   c.Secure || r.URL.Scheme == "https",
@@ -79,16 +81,16 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		fmt.Println("cookie not set because of invalid")
 	}
 
-	// http.SetCookie(w, &http.Cookie{
-	// 	Name:     c.Name,
-	// 	Domain:   c.Domain,
-	// 	Value:    value,
-	// 	MaxAge:   int(c.MaxAge.Seconds()),
-	// 	HttpOnly: c.HTTPOnly,
-	// 	Secure:   c.Secure || r.URL.Scheme == "https",
-	// 	SameSite: c.SameSite,
-	// 	Path:     "/",
-	// })
+	http.SetCookie(w, &http.Cookie{
+		Name:     c.Name,
+		Domain:   c.Domain,
+		Value:    value,
+		MaxAge:   int(c.MaxAge.Seconds()),
+		HttpOnly: c.HTTPOnly,
+		Secure:   c.Secure || r.URL.Scheme == "https",
+		SameSite: c.SameSite,
+		Path:     "/",
+	})
 	return nil
 }
 
