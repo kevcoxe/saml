@@ -67,7 +67,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	cookie := http.Cookie{
 		Name:     "token",
 		Domain:   c.Domain,
-		Value:    new_value,
+		Value:    value,
 		MaxAge:   int(c.MaxAge.Seconds()),
 		HttpOnly: c.HTTPOnly,
 		Secure:   c.Secure || r.URL.Scheme == "https",
