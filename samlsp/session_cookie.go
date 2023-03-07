@@ -39,6 +39,13 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
+	fmt.Printf("assertion attribute statements: %v\n", assertion.AttributeStatements)
+
+	sessionWithAttributes := session.(SessionWithAttributes)
+	attributes := sessionWithAttributes.GetAttributes()
+
+	fmt.Printf("attributes: %v\n", attributes)
+
 	value, err := c.Codec.Encode(session)
 	if err != nil {
 		return err
