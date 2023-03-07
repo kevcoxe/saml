@@ -95,7 +95,20 @@ func (m *Middleware) ServeACS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	value := "thisisatest"
+
 	fmt.Printf("Successfully parsed assertion: %v\n", assertion)
+	http.SetCookie(w, &http.Cookie{
+		Name:     "saml_proxy_token",
+		Domain:   "metrics-dev-saml.int.aiadmetdev-agg1.prod.infra.webex.com",
+		Value:    value,
+		MaxAge:   7200,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: 0,
+		Path:     "/",
+	})
+	http.Redirect(w, r, "//metrics-dev-saml.int.aiadmetdev-agg1.prod.infra.webex.com/", http.StatusFound)
 
 	m.CreateSessionFromAssertion(w, r, assertion, m.ServiceProvider.DefaultRedirectURI)
 	return
