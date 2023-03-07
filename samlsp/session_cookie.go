@@ -34,16 +34,6 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		c.Domain = domain
 	}
 
-	session, err := c.Codec.New(assertion)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("assertion attribute statements: %v\n", assertion.AttributeStatements)
-
-	sessionWithAttributes := session.(SessionWithAttributes)
-	attributes := sessionWithAttributes.GetAttributes()
-
 	myAttributes := saml.AttributeStatement{}
 
 	for _, as := range assertion.AttributeStatements {
@@ -65,6 +55,16 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 			fmt.Printf("post aa: %v\n", aa)
 		}
 	}
+
+	session, err := c.Codec.New(assertion)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("assertion attribute statements: %v\n", assertion.AttributeStatements)
+
+	sessionWithAttributes := session.(SessionWithAttributes)
+	attributes := sessionWithAttributes.GetAttributes()
 
 	for k, v := range attributes {
 		fmt.Printf("attribute (%v): %v\n", k, v)
