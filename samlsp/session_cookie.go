@@ -44,7 +44,9 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	sessionWithAttributes := session.(SessionWithAttributes)
 	attributes := sessionWithAttributes.GetAttributes()
 
-	fmt.Printf("attributes: %v\n", attributes)
+	for k, v := range attributes {
+		fmt.Printf("attribute (%v): %v\n", k, v)
+	}
 
 	value, err := c.Codec.Encode(session)
 	if err != nil {
