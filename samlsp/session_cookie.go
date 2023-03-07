@@ -54,6 +54,14 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	fmt.Printf("SameSite: %v\n", c.SameSite)
 	fmt.Printf("Path: %v\n", "/")
 
+	new_session, err := c.Codec.Decode(value)
+	if err != nil {
+		fmt.Println("Error decoding session: " + err.Error())
+		return ErrNoSession
+	}
+
+	fmt.Printf("new_session: %v\n", new_session)
+
 	http.SetCookie(w, &http.Cookie{
 		Name:     c.Name,
 		Domain:   c.Domain,
