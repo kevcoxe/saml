@@ -44,6 +44,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
+	fmt.Printf("Session: %v\n", session)
 	fmt.Printf("Name: %v\n", c.Name)
 	fmt.Printf("Domain: %v\n", c.Domain)
 	fmt.Printf("Value: %v\n", value)

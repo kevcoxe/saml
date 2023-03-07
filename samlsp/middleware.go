@@ -95,6 +95,8 @@ func (m *Middleware) ServeACS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("Successfully parsed assertion: %v\n", assertion)
+
 	m.CreateSessionFromAssertion(w, r, assertion, m.ServiceProvider.DefaultRedirectURI)
 	return
 }
