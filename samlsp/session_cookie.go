@@ -44,32 +44,25 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	sessionWithAttributes := session.(SessionWithAttributes)
 	attributes := sessionWithAttributes.GetAttributes()
 
-	myAttributes := []saml.Attribute{}
+	myAttributes := saml.AttributeStatement{}
 
 	for _, as := range assertion.AttributeStatements {
 		fmt.Printf("attribute statement: %v\n", as)
 		for _, aa := range as.Attributes {
-			fmt.Printf("attribute FriendlyName: %v\n", aa.FriendlyName)
-			fmt.Printf("attribute Name: %v\n", aa.Name)
-			fmt.Printf("attribute NameFormat: %v\n", aa.NameFormat)
-			fmt.Printf("attribute Values: %v\n", aa.Values)
+			fmt.Printf("aa: %v\n", aa)
 
 			if aa.Name == "email" {
-				myAttributes = append(myAttributes, aa)
+				myAttributes.Attributes = []saml.Attribute{aa}
 			}
 		}
-
-		as.Attributes = myAttributes
-
 	}
+
+	assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
 
 	for _, as := range assertion.AttributeStatements {
 		fmt.Printf("post attribute statement: %v\n", as)
 		for _, aa := range as.Attributes {
-			fmt.Printf("post attribute FriendlyName: %v\n", aa.FriendlyName)
-			fmt.Printf("post attribute Name: %v\n", aa.Name)
-			fmt.Printf("post attribute NameFormat: %v\n", aa.NameFormat)
-			fmt.Printf("post attribute Values: %v\n", aa.Values)
+			fmt.Printf("post aa: %v\n", aa)
 		}
 	}
 
