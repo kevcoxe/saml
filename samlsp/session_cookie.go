@@ -44,6 +44,8 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	sessionWithAttributes := session.(SessionWithAttributes)
 	attributes := sessionWithAttributes.GetAttributes()
 
+	myAttributes := []saml.Attribute{}
+
 	for _, as := range assertion.AttributeStatements {
 		fmt.Printf("attribute statement: %v\n", as)
 		for _, aa := range as.Attributes {
@@ -51,7 +53,14 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 			fmt.Printf("attribute Name: %v\n", aa.Name)
 			fmt.Printf("attribute NameFormat: %v\n", aa.NameFormat)
 			fmt.Printf("attribute Values: %v\n", aa.Values)
+
+			if aa.Name == "email" {
+				myAttributes = append(myAttributes, aa)
+			}
 		}
+
+		as.Attributes = myAttributes
+
 	}
 
 	for k, v := range attributes {
