@@ -62,7 +62,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 
 	fmt.Printf("new_session: %v\n", new_session)
 
-	http.SetCookie(w, &http.Cookie{
+	cookie := http.Cookie{
 		Name:     c.Name,
 		Domain:   c.Domain,
 		Value:    value,
@@ -71,7 +71,24 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		Secure:   c.Secure || r.URL.Scheme == "https",
 		SameSite: c.SameSite,
 		Path:     "/",
-	})
+	}
+
+	if v := cookie.String(); v != "" {
+		w.Header().Add("Set-Cookie", v)
+	} else {
+		fmt.Println("cookie not set because of invalid")
+	}
+
+	// http.SetCookie(w, &http.Cookie{
+	// 	Name:     c.Name,
+	// 	Domain:   c.Domain,
+	// 	Value:    value,
+	// 	MaxAge:   int(c.MaxAge.Seconds()),
+	// 	HttpOnly: c.HTTPOnly,
+	// 	Secure:   c.Secure || r.URL.Scheme == "https",
+	// 	SameSite: c.SameSite,
+	// 	Path:     "/",
+	// })
 	return nil
 }
 
