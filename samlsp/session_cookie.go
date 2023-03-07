@@ -63,6 +63,16 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 
 	}
 
+	for _, as := range assertion.AttributeStatements {
+		fmt.Printf("post attribute statement: %v\n", as)
+		for _, aa := range as.Attributes {
+			fmt.Printf("post attribute FriendlyName: %v\n", aa.FriendlyName)
+			fmt.Printf("post attribute Name: %v\n", aa.Name)
+			fmt.Printf("post attribute NameFormat: %v\n", aa.NameFormat)
+			fmt.Printf("post attribute Values: %v\n", aa.Values)
+		}
+	}
+
 	for k, v := range attributes {
 		fmt.Printf("attribute (%v): %v\n", k, v)
 	}
