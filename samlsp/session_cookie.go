@@ -35,29 +35,31 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	}
 
 	// remove extra attributes from assertion
-	// myAttributes := saml.AttributeStatement{}
-	// for _, as := range assertion.AttributeStatements {
-	// 	for _, aa := range as.Attributes {
+	myAttributes := saml.AttributeStatement{}
+	for _, as := range assertion.AttributeStatements {
+		for _, aa := range as.Attributes {
 
-	// 		if aa.Name == "email" {
-	// 			myAttributes.Attributes = []saml.Attribute{aa}
-	// 		}
-	// 	}
-	// }
-	// assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
+			if aa.Name == "email" {
+				myAttributes.Attributes = []saml.Attribute{aa}
+			}
+		}
+	}
+	assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
 
 	session, err := c.Codec.New(assertion)
 	if err != nil {
 		return err
 	}
 
+	// value size limit is 4096
 	value, err := c.Codec.Encode(session)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Value: %v\n", value)
-	fmt.Printf("Length of value: %v\n", len(value))
+	if len(value) > 4096 {
+		return fmt.Errorf("value length is to long, must be under 4096, current length: %v", len(value))
+	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     c.Name,
