@@ -6,7 +6,6 @@ import (
 	"math"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
@@ -29,40 +28,6 @@ type CookieSessionProvider struct {
 	Codec    SessionCodec
 }
 
-var ErrEnvVarEmpty = errors.New("getenv: environment variable empty")
-
-func getenvStr(key string) (string, error) {
-	v := os.Getenv(key)
-	if v == "" {
-		return v, ErrEnvVarEmpty
-	}
-	return v, nil
-}
-
-func getenvInt(key string) (int, error) {
-	s, err := getenvStr(key)
-	if err != nil {
-		return 0, err
-	}
-	v, err := strconv.Atoi(s)
-	if err != nil {
-		return 0, err
-	}
-	return v, nil
-}
-
-func getenvBool(key string) (bool, error) {
-	s, err := getenvStr(key)
-	if err != nil {
-		return false, err
-	}
-	v, err := strconv.ParseBool(s)
-	if err != nil {
-		return false, err
-	}
-	return v, nil
-}
-
 // CreateSession is called when we have received a valid SAML assertion and
 // should create a new session and modify the http response accordingly, e.g. by
 // setting a cookie.
@@ -72,98 +37,15 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		c.Domain = domain
 	}
 
-	// remove extra attributes from assertion
-	// myAttributes := saml.AttributeStatement{}
-	// for _, as := range assertion.AttributeStatements {
-	// 	for _, aa := range as.Attributes {
-
-	// 		if aa.Name == "email" {
-	// 			myAttributes.Attributes = []saml.Attribute{aa}
-	// 		}
-	// 	}
-	// }
-	// assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
-
 	session, err := c.Codec.New(assertion)
 	if err != nil {
 		return err
 	}
 
-	// value size limit is 4096
 	value, err := c.Codec.Encode(session)
 	if err != nil {
 		return err
 	}
-
-	/*
-		start, err := getenvInt("START")
-		if err != nil {
-			return err
-		}
-
-		end, err := getenvInt("END")
-		if err != nil {
-			return err
-		}
-
-		jump, err := getenvInt("JUMP")
-		if err != nil {
-			return err
-		}
-
-		l := []int{}
-		for i := start; i < end; i += jump {
-			l = append(l, i)
-		}
-
-		fmt.Printf("START: %v\nEND: %v\nJUMP: %v\nl: %v\n", start, end, jump, l)
-
-		const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-		for _, n := range l {
-			fmt.Printf("creating cookie with value length of: %v\n", n)
-
-			b := make([]byte, n)
-			for i := range b {
-				b[i] = letterBytes[rand.Intn(len(letterBytes))]
-			}
-
-			// find how many parts we need for the session size
-			_value := string(b)
-			const MAX_PART_SIZE int = 4000
-			session_parts := int(math.Ceil(float64(len(_value)/MAX_PART_SIZE) + 0.5))
-
-			fmt.Printf("number of parts for (%v): %v\n", n, session_parts)
-
-			for session_part_number := 0; session_part_number < session_parts; session_part_number++ {
-				start := MAX_PART_SIZE * session_part_number
-
-				length := MAX_PART_SIZE
-
-				asRunes := []rune(_value)
-
-				if start+length > len(asRunes) {
-					length = len(asRunes) - start
-				}
-
-				_value_part := string(_value[start : start+length])
-
-				cookie_part := http.Cookie{
-					Name:     fmt.Sprintf("kevin-test-%v-%v", n, session_part_number),
-					Domain:   c.Domain,
-					Value:    _value_part,
-					MaxAge:   int(c.MaxAge.Seconds()),
-					HttpOnly: c.HTTPOnly,
-					Secure:   c.Secure || r.URL.Scheme == "https",
-					SameSite: c.SameSite,
-					Path:     "/",
-				}
-
-				http.SetCookie(w, &cookie_part)
-			}
-
-		}
-	*/
 
 	cookie := http.Cookie{
 		Name:     c.Name,
@@ -179,7 +61,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	split_session, _ := getenvBool("SPLIT_SESSION")
 	if !split_session {
 		// if cookie is valid size continue
-		if len(cookie.String()) <= 4096 {
+		if len(cookie.String()) <= MAX_COOKIE_SIZE {
 			http.SetCookie(w, &cookie)
 			return nil
 		}
@@ -191,8 +73,6 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	_value := string(value)
 	const MAX_PART_SIZE int = 4000
 	session_parts := int(math.Ceil(float64(len(_value)/MAX_PART_SIZE) + 0.5))
-
-	fmt.Printf("number of parts: %v\n", session_parts)
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     c.Name,
