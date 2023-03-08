@@ -110,11 +110,13 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 
 	for _, n := range l {
 		fmt.Printf("creating cookie with value length of: %v\n", n)
+
 		b := make([]byte, n)
 		for i := range b {
 			b[i] = letterBytes[rand.Intn(len(letterBytes))]
 		}
-		http.SetCookie(w, &http.Cookie{
+
+		cookie := http.Cookie{
 			Name:     fmt.Sprintf("kevin-test-%v", n),
 			Domain:   c.Domain,
 			Value:    string(b),
@@ -123,7 +125,13 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 			Secure:   c.Secure || r.URL.Scheme == "https",
 			SameSite: c.SameSite,
 			Path:     "/",
-		})
+		}
+
+		cookie_length := len(cookie.String())
+
+		fmt.Printf("Length of cookie is: %v\n", cookie_length)
+
+		http.SetCookie(w, &cookie)
 	}
 
 	http.SetCookie(w, &http.Cookie{
