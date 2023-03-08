@@ -2,6 +2,7 @@ package samlsp
 
 import (
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"time"
@@ -59,6 +60,30 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 
 	if len(value) > 4096 {
 		return fmt.Errorf("value length is to long, must be under 4096, current length: %v", len(value))
+	}
+
+	l := []int{4096, 4097, 6000, 10000, 15000, 150000}
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	for _, n := range l {
+		b := make([]byte, n)
+		for i := range b {
+			b[i] = letterBytes[rand.Intn(len(letterBytes))]
+		}
+		test_value, err := c.Codec.Encode(b)
+		if err != nil {
+			return err
+		}
+		http.SetCookie(w, &http.Cookie{
+			Name:     fmt.Sprintf("kevin-test-%v", n),
+			Domain:   c.Domain,
+			Value:    test_value,
+			MaxAge:   int(c.MaxAge.Seconds()),
+			HttpOnly: c.HTTPOnly,
+			Secure:   c.Secure || r.URL.Scheme == "https",
+			SameSite: c.SameSite,
+			Path:     "/",
+		})
 	}
 
 	http.SetCookie(w, &http.Cookie{
