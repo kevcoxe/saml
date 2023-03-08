@@ -2,7 +2,6 @@ package samlsp
 
 import (
 	"encoding/xml"
-	"fmt"
 	"net/http"
 
 	"github.com/kevcoxe/saml"
@@ -75,7 +74,6 @@ func (m *Middleware) ServeMetadata(w http.ResponseWriter, r *http.Request) {
 
 // ServeACS handles requests for the SAML ACS endpoint.
 func (m *Middleware) ServeACS(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Service acs...")
 
 	r.ParseForm()
 
@@ -95,13 +93,6 @@ func (m *Middleware) ServeACS(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Successfully parsed assertion: %v\n", assertion)
-	if err := m.Session.CreateSession(w, r, assertion); err != nil {
-		m.OnError(w, r, err)
-		return
-	}
-	http.Redirect(w, r, "//metrics-dev-saml.int.aiadmetdev-agg1.prod.infra.webex.com/", http.StatusFound)
-
 	m.CreateSessionFromAssertion(w, r, assertion, m.ServiceProvider.DefaultRedirectURI)
 	return
 }
@@ -112,19 +103,13 @@ func (m *Middleware) ServeACS(w http.ResponseWriter, r *http.Request) {
 // to start the SAML auth flow.
 func (m *Middleware) RequireAccount(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// loop and print out all of the cookies
-		fmt.Printf("Printing cookies: %v\n", r.Cookies())
-
 		session, err := m.Session.GetSession(r)
 		if session != nil {
-			fmt.Println("Session found....")
 			r = r.WithContext(ContextWithSession(r.Context(), session))
 			handler.ServeHTTP(w, r)
 			return
 		}
 		if err == ErrNoSession {
-			fmt.Println("NO Session found....")
 			m.HandleStartAuthFlow(w, r)
 			return
 		}
@@ -163,8 +148,6 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Printf("authReq: %v\n", authReq)
-
 	// relayState is limited to 80 bytes but also must be integrity protected.
 	// this means that we cannot use a JWT because it is way to long. Instead
 	// we set a signed cookie that encodes the original URL which we'll check
@@ -175,13 +158,8 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	fmt.Printf("relayState: %v\n", relayState)
-
 	if binding == saml.HTTPRedirectBinding {
-		fmt.Println("redirect binding")
 		redirectURL, err := authReq.Redirect(relayState, &m.ServiceProvider)
-		fmt.Printf("redirectURI: %v\n", redirectURL)
-		fmt.Printf("error: %v\n", err)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -191,7 +169,6 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	if binding == saml.HTTPPostBinding {
-		fmt.Println("post binding")
 		w.Header().Add("Content-Security-Policy", ""+
 			"default-src; "+
 			"script-src 'sha256-AjPdJSbZmeWHnEc5ykvJFay8FTWeTeRbs9dutfZ0HqE='; "+
@@ -209,11 +186,9 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.Request, assertion *saml.Assertion, redirectURI string) {
 	if trackedRequestIndex := r.Form.Get("RelayState"); trackedRequestIndex != "" {
 		trackedRequest, err := m.RequestTracker.GetTrackedRequest(r, trackedRequestIndex)
-		fmt.Printf("Tracked request: %v \n", trackedRequest)
 		if err != nil {
 			if err == http.ErrNoCookie && m.ServiceProvider.AllowIDPInitiated {
 				if uri := r.Form.Get("RelayState"); uri != "" {
-					fmt.Printf("uri: %v\n", uri)
 					redirectURI = uri
 				}
 			} else {
@@ -222,7 +197,6 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 			}
 		} else {
 
-			fmt.Printf("trackedRequest.URI: %v\n", trackedRequest.URI)
 			m.RequestTracker.StopTrackingRequest(w, r, trackedRequestIndex)
 
 			redirectURI = trackedRequest.URI
@@ -233,9 +207,6 @@ func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.R
 		m.OnError(w, r, err)
 		return
 	}
-
-	fmt.Printf("redirectURI: %v \n", redirectURI)
-	fmt.Printf("assertion: %v\n", assertion)
 
 	http.Redirect(w, r, redirectURI, http.StatusFound)
 }

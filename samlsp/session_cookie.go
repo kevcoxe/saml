@@ -34,12 +34,10 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		c.Domain = domain
 	}
 
+	// remove extra attributes from assertion
 	myAttributes := saml.AttributeStatement{}
-
 	for _, as := range assertion.AttributeStatements {
-		fmt.Printf("attribute statement: %v\n", as)
 		for _, aa := range as.Attributes {
-			fmt.Printf("aa: %v\n", aa)
 
 			if aa.Name == "email" {
 				myAttributes.Attributes = []saml.Attribute{aa}
@@ -49,25 +47,9 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 
 	assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
 
-	for _, as := range assertion.AttributeStatements {
-		fmt.Printf("post attribute statement: %v\n", as)
-		for _, aa := range as.Attributes {
-			fmt.Printf("post aa: %v\n", aa)
-		}
-	}
-
 	session, err := c.Codec.New(assertion)
 	if err != nil {
 		return err
-	}
-
-	fmt.Printf("assertion attribute statements: %v\n", assertion.AttributeStatements)
-
-	sessionWithAttributes := session.(SessionWithAttributes)
-	attributes := sessionWithAttributes.GetAttributes()
-
-	for k, v := range attributes {
-		fmt.Printf("attribute (%v): %v\n", k, v)
 	}
 
 	value, err := c.Codec.Encode(session)
@@ -75,40 +57,8 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return err
 	}
 
-	fmt.Printf("Session: %v\n", session)
-	fmt.Printf("Name: %v\n", c.Name)
-	fmt.Printf("Domain: %v\n", c.Domain)
 	fmt.Printf("Value: %v\n", value)
-	fmt.Printf("MaxAge: %v\n", int(c.MaxAge.Seconds()))
-	fmt.Printf("HttpOnly: %v\n", c.HTTPOnly)
-	fmt.Printf("Secure: %v\n", c.Secure || r.URL.Scheme == "https")
-	fmt.Printf("SameSite: %v\n", c.SameSite)
-	fmt.Printf("Path: %v\n", "/")
-
-	new_session, err := c.Codec.Decode(value)
-	if err != nil {
-		fmt.Println("Error decoding session: " + err.Error())
-		return ErrNoSession
-	}
-
-	fmt.Printf("new_session: %v\n", new_session)
-
-	cookie := http.Cookie{
-		Name:     "token",
-		Domain:   c.Domain,
-		Value:    value,
-		MaxAge:   int(c.MaxAge.Seconds()),
-		HttpOnly: c.HTTPOnly,
-		Secure:   c.Secure || r.URL.Scheme == "https",
-		SameSite: c.SameSite,
-		Path:     "/",
-	}
-
-	if v := cookie.String(); v != "" {
-		w.Header().Add("Set-Cookie", v)
-	} else {
-		fmt.Println("cookie not set because of invalid")
-	}
+	fmt.Printf("Length of value: %v\n", len(value))
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     c.Name,
