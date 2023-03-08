@@ -70,7 +70,7 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		for i := range b {
 			b[i] = letterBytes[rand.Intn(len(letterBytes))]
 		}
-		test_value, err := c.Codec.Encode(b)
+		test_value, err := c.Codec.Encode(string(b))
 		if err != nil {
 			return err
 		}
