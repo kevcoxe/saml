@@ -3,6 +3,7 @@ package samlsp
 import (
 	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"net"
 	"net/http"
@@ -116,25 +117,41 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 			b[i] = letterBytes[rand.Intn(len(letterBytes))]
 		}
 
-		cookie := http.Cookie{
-			Name:     fmt.Sprintf("kevin-test-%v", n),
-			Domain:   c.Domain,
-			Value:    string(b),
-			MaxAge:   int(c.MaxAge.Seconds()),
-			HttpOnly: c.HTTPOnly,
-			Secure:   c.Secure || r.URL.Scheme == "https",
-			SameSite: c.SameSite,
-			Path:     "/",
+		// find how many parts we need for the session size
+		_value := string(b)
+		const MAX_PART_SIZE int = 4000
+		session_parts := int(math.Ceil(float64(len(_value) / MAX_PART_SIZE)))
+
+		for session_part_number := 0; session_part_number < session_parts; session_part_number++ {
+			start := MAX_PART_SIZE * session_part_number
+
+			length := MAX_PART_SIZE
+
+			asRunes := []rune(_value)
+
+			if start+length > len(asRunes) {
+				length = len(asRunes) - start
+			}
+
+			_value_part := string(_value[start : start+length])
+
+			cookie_part := http.Cookie{
+				Name:     fmt.Sprintf("kevin-test-%v-%v", n, session_part_number),
+				Domain:   c.Domain,
+				Value:    _value_part,
+				MaxAge:   int(c.MaxAge.Seconds()),
+				HttpOnly: c.HTTPOnly,
+				Secure:   c.Secure || r.URL.Scheme == "https",
+				SameSite: c.SameSite,
+				Path:     "/",
+			}
+
+			http.SetCookie(w, &cookie_part)
 		}
 
-		cookie_length := len(cookie.String())
-
-		fmt.Printf("Length of cookie is: %v\n", cookie_length)
-
-		http.SetCookie(w, &cookie)
 	}
 
-	http.SetCookie(w, &http.Cookie{
+	cookie := http.Cookie{
 		Name:     c.Name,
 		Domain:   c.Domain,
 		Value:    value,
@@ -143,7 +160,45 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		Secure:   c.Secure || r.URL.Scheme == "https",
 		SameSite: c.SameSite,
 		Path:     "/",
-	})
+	}
+
+	// if cookie is valid size continue
+	if len(cookie.String()) <= 4096 {
+		http.SetCookie(w, &cookie)
+		return nil
+	}
+
+	// find how many parts we need for the session size
+	const MAX_PART_SIZE int = 4000
+	session_parts := int(math.Ceil(float64(len(value) / MAX_PART_SIZE)))
+
+	for session_part_number := 0; session_part_number < session_parts; session_part_number++ {
+		start := MAX_PART_SIZE * session_part_number
+
+		length := MAX_PART_SIZE
+
+		asRunes := []rune(value)
+
+		if start+length > len(asRunes) {
+			length = len(asRunes) - start
+		}
+
+		value_part := string(value[start : start+length])
+
+		cookie_part := http.Cookie{
+			Name:     fmt.Sprintf("%v-%v", c.Name, session_part_number),
+			Domain:   c.Domain,
+			Value:    value_part,
+			MaxAge:   int(c.MaxAge.Seconds()),
+			HttpOnly: c.HTTPOnly,
+			Secure:   c.Secure || r.URL.Scheme == "https",
+			SameSite: c.SameSite,
+			Path:     "/",
+		}
+
+		http.SetCookie(w, &cookie_part)
+	}
+
 	return nil
 }
 
