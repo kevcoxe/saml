@@ -107,6 +107,9 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	for i := start; i < end; i += jump {
 		l = append(l, i)
 	}
+
+	fmt.Printf("START: %v\nEND: %v\nJUMP: %v\nl: %v\n", start, end, jump, l)
+
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 	for _, n := range l {
