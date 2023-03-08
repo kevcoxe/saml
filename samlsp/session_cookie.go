@@ -62,10 +62,11 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("value length is to long, must be under 4096, current length: %v", len(value))
 	}
 
-	l := []int{4096, 4097, 6000, 10000, 15000, 150000}
+	l := []int{10, 20, 100, 400, 800, 4096, 4097, 6000, 10000, 15000, 150000}
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 	for _, n := range l {
+		fmt.Printf("creating cookie with value length of: %v\n", n)
 		b := make([]byte, n)
 		for i := range b {
 			b[i] = letterBytes[rand.Intn(len(letterBytes))]
