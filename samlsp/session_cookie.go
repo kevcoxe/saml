@@ -70,14 +70,10 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		for i := range b {
 			b[i] = letterBytes[rand.Intn(len(letterBytes))]
 		}
-		test_value, err := c.Codec.Encode(string(b))
-		if err != nil {
-			return err
-		}
 		http.SetCookie(w, &http.Cookie{
 			Name:     fmt.Sprintf("kevin-test-%v", n),
 			Domain:   c.Domain,
-			Value:    test_value,
+			Value:    string(b),
 			MaxAge:   int(c.MaxAge.Seconds()),
 			HttpOnly: c.HTTPOnly,
 			Secure:   c.Secure || r.URL.Scheme == "https",
