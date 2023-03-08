@@ -140,8 +140,8 @@ func DefaultServiceProvider(opts Options) saml.ServiceProvider {
 func New(opts Options) (*Middleware, error) {
 	m := &Middleware{
 		ServiceProvider: DefaultServiceProvider(opts),
-		Binding:         saml.HTTPRedirectBinding,
-		ResponseBinding: saml.HTTPRedirectBinding,
+		Binding:         "",
+		ResponseBinding: saml.HTTPPostBinding,
 		OnError:         DefaultOnError,
 		Session:         DefaultSessionProvider(opts),
 	}
