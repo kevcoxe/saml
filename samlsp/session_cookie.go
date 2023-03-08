@@ -36,16 +36,16 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 	}
 
 	// remove extra attributes from assertion
-	// myAttributes := saml.AttributeStatement{}
-	// for _, as := range assertion.AttributeStatements {
-	// 	for _, aa := range as.Attributes {
+	myAttributes := saml.AttributeStatement{}
+	for _, as := range assertion.AttributeStatements {
+		for _, aa := range as.Attributes {
 
-	// 		if aa.Name == "email" {
-	// 			myAttributes.Attributes = []saml.Attribute{aa}
-	// 		}
-	// 	}
-	// }
-	// assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
+			if aa.Name == "email" {
+				myAttributes.Attributes = []saml.Attribute{aa}
+			}
+		}
+	}
+	assertion.AttributeStatements = []saml.AttributeStatement{myAttributes}
 
 	session, err := c.Codec.New(assertion)
 	if err != nil {
