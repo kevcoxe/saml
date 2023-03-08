@@ -123,9 +123,9 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		// find how many parts we need for the session size
 		_value := string(b)
 		const MAX_PART_SIZE int = 4000
-		session_parts := int(math.Ceil(float64(len(_value) / MAX_PART_SIZE)))
+		session_parts := int(math.Floor(float64(len(_value)/MAX_PART_SIZE) + 0.5))
 
-		for session_part_number := 0; session_part_number <= session_parts; session_part_number++ {
+		for session_part_number := 0; session_part_number < session_parts; session_part_number++ {
 			start := MAX_PART_SIZE * session_part_number
 
 			length := MAX_PART_SIZE
