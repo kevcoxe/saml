@@ -1,10 +1,13 @@
 package samlsp
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/kevcoxe/saml"
@@ -24,6 +27,28 @@ type CookieSessionProvider struct {
 	SameSite http.SameSite
 	MaxAge   time.Duration
 	Codec    SessionCodec
+}
+
+var ErrEnvVarEmpty = errors.New("getenv: environment variable empty")
+
+func getenvStr(key string) (string, error) {
+	v := os.Getenv(key)
+	if v == "" {
+		return v, ErrEnvVarEmpty
+	}
+	return v, nil
+}
+
+func getenvInt(key string) (int, error) {
+	s, err := getenvStr(key)
+	if err != nil {
+		return 0, err
+	}
+	v, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
+	return v, nil
 }
 
 // CreateSession is called when we have received a valid SAML assertion and
@@ -62,7 +87,25 @@ func (c CookieSessionProvider) CreateSession(w http.ResponseWriter, r *http.Requ
 		return fmt.Errorf("value length is to long, must be under 4096, current length: %v", len(value))
 	}
 
-	l := []int{10, 20, 100, 400, 800, 4096, 4097, 6000, 10000, 15000, 150000}
+	start, err := getenvInt("START")
+	if err != nil {
+		return err
+	}
+
+	end, err := getenvInt("END")
+	if err != nil {
+		return err
+	}
+
+	jump, err := getenvInt("JUMP")
+	if err != nil {
+		return err
+	}
+
+	l := []int{}
+	for i := start; i < end; i += jump {
+		l = append(l, i)
+	}
 	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 	for _, n := range l {
